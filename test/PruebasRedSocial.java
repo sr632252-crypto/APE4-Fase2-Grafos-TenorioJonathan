@@ -99,6 +99,21 @@ public class PruebasRedSocial {
         verificar("P34 Eliminar último vértice (A06)", r3.eliminarPersona("A06") && r3.contarPersonas() == 5);
         verificar("P35 Registrar nuevamente tras eliminar", r3.registrarPersona("A06", "Diego"));
 
+        // Casos adicionales
+        RedSocial vacia = new RedSocial();
+        verificar("P36 Red vacía: 0 usuarios y mostrarRed sin errores",
+                vacia.contarPersonas() == 0 && vacia.mostrarRed().contains("red vacía"));
+        RedSocial r4 = redInicial();
+        r4.seguir("A02", "A01");
+        verificar("P37 AMISTAD y SEGUIR conviven entre las mismas personas",
+                r4.contarAmigos("A02") == 2 && "Sofía".equals(r4.listarSeguidos("A02")));
+        r4.eliminarAmistad("A01", "A02");
+        verificar("P38 Eliminar la amistad no borra el seguimiento",
+                "Sofía".equals(r4.listarSeguidos("A02")) && r4.contarAmigos("A02") == 1);
+        verificar("P39 Eliminar la cabeza (A01) deja a A02 como primer vértice",
+                r4.eliminarPersona("A01") && r4.mostrarRed().split("\n")[1].contains("A02"));
+        verificar("P40 Conteo de seguimientos tras eliminar al seguido", r4.contarSeguimientos() == 0);
+
         System.out.println("\nResultado: " + pasadas + " pasadas, " + fallidas + " fallidas, "
                 + (pasadas + fallidas) + " en total.");
         if (fallidas > 0) System.exit(1);
