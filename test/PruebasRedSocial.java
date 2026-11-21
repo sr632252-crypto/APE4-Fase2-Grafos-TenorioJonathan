@@ -1,10 +1,8 @@
-/**
- * Pruebas automatizadas de RedSocial (sin librerías externas).
- *
- * Compilar:  javac -d out src/*.java test/*.java
- * Ejecutar:  java -cp out PruebasRedSocial
- *
- * @author Jonathan Tenorio
+/*
+ * Pruebas de RedSocial (sin JUnit).
+ *   javac -encoding UTF-8 -d out src/*.java test/*.java
+ *   java -cp out PruebasRedSocial
+ * Autor: Jonathan Tenorio
  */
 public class PruebasRedSocial {
 

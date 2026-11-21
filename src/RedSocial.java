@@ -1,24 +1,17 @@
-/**
- * APE 4 - Fase 2: Conexión Ambato
- * Red social dinámica representada con una multilista (lista de adyacencia
- * construida con nodos propios). No se usan HashMap, HashSet, ArrayList ni
- * LinkedList.
- *
- * - Cada persona es un Vertice enlazado en la lista principal.
- * - Cada Vertice tiene su propia lista de Arista.
- * - AMISTAD se guarda en ambos sentidos (dos aristas).
- * - SEGUIR se guarda solo desde quien sigue hacia el seguido (una arista).
- *
- * @author Jonathan Tenorio
+/*
+ * APE 4 - Fase 2: Conexion Ambato
+ * Red social con lista de adyacencia (multilista) usando nodos propios.
+ * AMISTAD va en los dos sentidos, SEGUIR solo de quien sigue al seguido.
+ * Autor: Jonathan Tenorio
  */
 public class RedSocial {
 
-    /** Tipos de relación permitidos entre dos personas. */
+    // tipos de relacion
     public enum TipoRelacion { AMISTAD, SEGUIR }
 
-    /** Datos de una persona de la red. */
+    // datos de la persona
     static class Persona {
-        String usuario; // identificador normalizado (minúsculas)
+        String usuario; // en minusculas
         String nombre;
 
         Persona(String usuario, String nombre) {
@@ -27,18 +20,18 @@ public class RedSocial {
         }
     }
 
-    /** Nodo de la lista principal: una persona y su lista de aristas. */
+    // nodo de la lista principal (una persona)
     static class Vertice {
         Persona persona;
-        Arista aristas; // cabeza de la lista de adyacencia
-        Vertice sig;    // siguiente persona de la red
+        Arista aristas; // lista de relaciones
+        Vertice sig;
 
         Vertice(Persona persona) {
             this.persona = persona;
         }
     }
 
-    /** Nodo de la lista de adyacencia: una relación dirigida. */
+    // nodo de la lista de relaciones
     static class Arista {
         Vertice destino;
         TipoRelacion tipo;
@@ -50,20 +43,18 @@ public class RedSocial {
         }
     }
 
-    private Vertice cabeza;   // primera persona de la red
+    private Vertice cabeza;
     private int numPersonas;  // V
-    private int numAristas;   // A (cada amistad aporta 2)
+    private int numAristas;   // A (cada amistad cuenta 2)
 
-    // ------------------------------------------------------------------
-    // Auxiliares privados
-    // ------------------------------------------------------------------
+    // ===== Auxiliares privados =====
 
-    /** Normaliza un identificador: sin espacios externos y en minúsculas. */
+    // quita espacios y pasa a minusculas
     private static String normalizar(String usuario) {
         return usuario == null ? null : usuario.trim().toLowerCase();
     }
 
-    /** Busca un vértice por su identificador normalizado. O(V) */
+    // busca la persona por usuario, O(V)
     private Vertice buscar(String usuario) {
         String clave = normalizar(usuario);
         if (clave == null || clave.isEmpty()) return null;
@@ -73,7 +64,7 @@ public class RedSocial {
         return null;
     }
 
-    /** Indica si existe una arista origen -> destino del tipo dado. O(grado) */
+    // true si ya hay una arista origen -> destino de ese tipo
     private boolean existe(Vertice origen, Vertice destino, TipoRelacion tipo) {
         for (Arista a = origen.aristas; a != null; a = a.sig) {
             if (a.destino == destino && a.tipo == tipo) return true;
@@ -81,10 +72,7 @@ public class RedSocial {
         return false;
     }
 
-    /**
-     * Inserta una arista al final de la lista de origen para conservar el
-     * orden en que se registraron las relaciones. O(grado)
-     */
+    // inserta al final para que quede en el orden en que se agrego
     private void insertar(Vertice origen, Vertice destino, TipoRelacion tipo) {
         Arista nueva = new Arista(destino, tipo);
         if (origen.aristas == null) {
@@ -97,7 +85,7 @@ public class RedSocial {
         numAristas++;
     }
 
-    /** Quita la arista origen -> destino del tipo dado. O(grado) */
+    // quita una arista de ese tipo
     private boolean quitar(Vertice origen, Vertice destino, TipoRelacion tipo) {
         Arista anterior = null;
         for (Arista a = origen.aristas; a != null; anterior = a, a = a.sig) {
@@ -111,7 +99,7 @@ public class RedSocial {
         return false;
     }
 
-    /** Retira de la lista de origen toda arista (de cualquier tipo) hacia destino. */
+    // quita todas las aristas que van hacia destino
     private void quitarHacia(Vertice origen, Vertice destino) {
         while (origen.aristas != null && origen.aristas.destino == destino) {
             origen.aristas = origen.aristas.sig;
@@ -128,7 +116,7 @@ public class RedSocial {
         }
     }
 
-    /** Valida el formato del identificador: no vacío, sin espacios ni comas. */
+    // el usuario no puede ser vacio ni tener espacios o comas
     private static boolean usuarioValido(String usuario) {
         if (usuario == null) return false;
         String u = usuario.trim();
@@ -140,17 +128,14 @@ public class RedSocial {
         return true;
     }
 
-    // ------------------------------------------------------------------
-    // Operaciones sobre personas
-    // ------------------------------------------------------------------
+    // ===== Operaciones sobre personas =====
 
-    /** Registra una persona. Rechaza usuario vacío, repetido, con espacios o comas. */
     public boolean registrarPersona(String usuario, String nombre) {
         if (!usuarioValido(usuario) || nombre == null || nombre.trim().isEmpty()) return false;
         String clave = normalizar(usuario);
         Vertice ultimo = null;
         for (Vertice v = cabeza; v != null; v = v.sig) {
-            if (v.persona.usuario.equals(clave)) return false; // duplicado
+            if (v.persona.usuario.equals(clave)) return false; // ya existe
             ultimo = v;
         }
         Vertice nuevo = new Vertice(new Persona(clave, nombre.trim()));
@@ -160,20 +145,19 @@ public class RedSocial {
         return true;
     }
 
-    /** Elimina el vértice y todas las aristas que llegan a él. O(V + A) */
+    // primero se borran las aristas que llegan a la persona, O(V + A)
     public boolean eliminarPersona(String usuario) {
         Vertice objetivo = buscar(usuario);
         if (objetivo == null) return false;
 
-        // 1. Limpiar referencias entrantes en toda la red.
         for (Vertice w = cabeza; w != null; w = w.sig) {
             if (w != objetivo) quitarHacia(w, objetivo);
         }
-        // 2. Descontar las aristas salientes del propio objetivo.
+        // sus propias aristas
         for (Arista a = objetivo.aristas; a != null; a = a.sig) numAristas--;
         objetivo.aristas = null;
 
-        // 3. Desenlazar el vértice de la lista principal.
+        // sacarlo de la lista principal
         Vertice anterior = null, actual = cabeza;
         while (actual != objetivo) {
             anterior = actual;
@@ -185,11 +169,9 @@ public class RedSocial {
         return true;
     }
 
-    // ------------------------------------------------------------------
-    // Operaciones sobre relaciones
-    // ------------------------------------------------------------------
+    // ===== Operaciones sobre relaciones =====
 
-    /** La amistad es recíproca: se crean dos aristas AMISTAD. */
+    // amistad: dos aristas
     public boolean agregarAmistad(String a, String b) {
         Vertice va = buscar(a), vb = buscar(b);
         if (va == null || vb == null || va == vb
@@ -199,7 +181,7 @@ public class RedSocial {
         return true;
     }
 
-    /** Seguir es dirigido: se crea una sola arista SEGUIR (a -> b). */
+    // seguir: una sola arista a -> b
     public boolean seguir(String a, String b) {
         Vertice va = buscar(a), vb = buscar(b);
         if (va == null || vb == null || va == vb
@@ -208,7 +190,6 @@ public class RedSocial {
         return true;
     }
 
-    /** Quita las dos aristas AMISTAD entre a y b. */
     public boolean eliminarAmistad(String a, String b) {
         Vertice va = buscar(a), vb = buscar(b);
         if (va == null || vb == null || va == vb) return false;
@@ -217,18 +198,15 @@ public class RedSocial {
         return true;
     }
 
-    /** Quita solo la arista SEGUIR a -> b. */
     public boolean dejarDeSeguir(String a, String b) {
         Vertice va = buscar(a), vb = buscar(b);
         if (va == null || vb == null || va == vb) return false;
         return quitar(va, vb, TipoRelacion.SEGUIR);
     }
 
-    // ------------------------------------------------------------------
-    // Consultas
-    // ------------------------------------------------------------------
+    // ===== Consultas =====
 
-    /** Nombres de los destinos de las aristas del tipo dado, separados por coma. */
+    // arma el texto con los nombres separados por coma
     private String listarSalientes(Vertice v, TipoRelacion tipo) {
         StringBuilder sb = new StringBuilder();
         for (Arista a = v.aristas; a != null; a = a.sig) {
@@ -240,19 +218,18 @@ public class RedSocial {
         return sb.toString();
     }
 
-    /** Amigos del usuario; null si no existe, "" si no tiene amigos. O(V + grado) */
+    // null si no existe el usuario
     public String listarAmigos(String usuario) {
         Vertice v = buscar(usuario);
         return v == null ? null : listarSalientes(v, TipoRelacion.AMISTAD);
     }
 
-    /** Personas a las que sigue el usuario. O(V + grado) */
     public String listarSeguidos(String usuario) {
         Vertice v = buscar(usuario);
         return v == null ? null : listarSalientes(v, TipoRelacion.SEGUIR);
     }
 
-    /** Personas que siguen al usuario: se revisa toda la red. O(V + A) */
+    // hay que revisar toda la red, O(V + A)
     public String listarSeguidores(String usuario) {
         Vertice objetivo = buscar(usuario);
         if (objetivo == null) return null;
@@ -266,7 +243,7 @@ public class RedSocial {
         return sb.toString();
     }
 
-    /** Número de amigos; -1 si el usuario no existe. O(V + grado) */
+    // -1 si no existe
     public int contarAmigos(String usuario) {
         Vertice v = buscar(usuario);
         if (v == null) return -1;
@@ -277,7 +254,6 @@ public class RedSocial {
         return total;
     }
 
-    /** Indica si existe el usuario. */
     public boolean existePersona(String usuario) {
         return buscar(usuario) != null;
     }
@@ -286,7 +262,6 @@ public class RedSocial {
 
     public int contarAristas() { return numAristas; }
 
-    /** Número de amistades (cada amistad son dos aristas internas). O(V + A) */
     public int contarAmistades() {
         int aristasAmistad = 0;
         for (Vertice v = cabeza; v != null; v = v.sig) {
@@ -297,7 +272,6 @@ public class RedSocial {
         return aristasAmistad / 2;
     }
 
-    /** Número de relaciones SEGUIR. O(V + A) */
     public int contarSeguimientos() {
         int total = 0;
         for (Vertice v = cabeza; v != null; v = v.sig) {
@@ -308,7 +282,6 @@ public class RedSocial {
         return total;
     }
 
-    /** Representación textual de la multilista completa. O(V + A) */
     public String mostrarRed() {
         StringBuilder sb = new StringBuilder();
         sb.append("Red Conexión Ambato  (V = ").append(numPersonas)

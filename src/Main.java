@@ -1,15 +1,11 @@
 import java.util.Scanner;
 
-/**
- * APE 4 - Fase 2: Conexión Ambato.
- * Ejecuta la secuencia de comprobación de la guía (Tabla 3).
- * Con el argumento "menu" abre un menú interactivo.
- *
- * Compilar:  javac -d out src/*.java
- * Ejecutar:  java -cp out Main          (secuencia de la guía)
- *            java -cp out Main menu     (menú interactivo)
- *
- * @author Jonathan Tenorio
+/*
+ * APE 4 - Fase 2: Conexion Ambato
+ * Ejecuta los pasos de la guia (Tabla 3). Con "menu" abre el menu.
+ *   javac -encoding UTF-8 -d out src/*.java
+ *   java -cp out Main        o   java -cp out Main menu
+ * Autor: Jonathan Tenorio
  */
 public class Main {
 
@@ -21,7 +17,7 @@ public class Main {
         }
     }
 
-    /** Red inicial de la Fase 1: seis usuarios y cinco amistades. */
+    // red inicial de la Fase 1: seis usuarios y cinco amistades
     static RedSocial cargarRedInicial(boolean imprimir) {
         RedSocial red = new RedSocial();
         String[][] personas = {
@@ -119,7 +115,7 @@ public class Main {
                 + red.contarAristas() + " aristas internas.");
     }
 
-    /** Menú interactivo opcional. */
+    // menú interactivo opcional
     static void menu() {
         RedSocial red = cargarRedInicial(false);
         Scanner sc = new Scanner(System.in);
